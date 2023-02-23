@@ -1,0 +1,25 @@
+@import 'base/variable';
+@import 'base/grid';
+@import 'base/button';
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background-color: $bg-color;
+    color: $red;
+}
+
+a {
+    transition: all 0.3 ease;
+}
+
+ul {
+    margin: 0;
+    padding: 0;
+}
+
+h1 {
+    font-size: 30px;
+}
