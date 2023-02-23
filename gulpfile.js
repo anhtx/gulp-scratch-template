@@ -1,52 +1,70 @@
 // Let gulp of course
-var gulp = require( 'gulp' );
-var rename = require( 'gulp-rename' );
-var sass = require( 'gulp-sass' )(require( 'sass' ));
-var uglify = require( 'gulp-uglify' );
-var autoprefixer = require( 'gulp-autoprefixer' );
-var sourcemaps = require( 'gulp-sourcemaps' );
-var browserify = require( 'browserify' );
-var babelify = require( 'babelify' );
-var source = require( 'vinyl-source-stream' );
-var buffer = require( 'vinyl-buffer' );
+// var gulp = require( 'gulp' );
+const { src, dest, task, series, parallel, watch } = require('gulp');
+
+// CSS
+const sass = require( 'gulp-sass' )(require( 'sass' ));
+const autoprefixer = require( 'gulp-autoprefixer' );
+
+// Plugins
+const rename = require( 'gulp-rename' );
+const uglify = require( 'gulp-uglify' );
+const sourcemaps = require( 'gulp-sourcemaps' );
+const browserify = require( 'browserify' );
+const babelify = require( 'babelify' );
+const source = require( 'vinyl-source-stream' );
+const buffer = require( 'vinyl-buffer' );
 const { notify } = require('browser-sync');
-var browserSync = require( 'browser-sync' ).create();
-var reload = browserSync.reload;
-
-var styleSrc = 'src/scss/style.scss';
-var styleDist = './dist/css/';
-var styleWatch = 'src/scss/**/*.scss';
-
-var jsSrc = 'script.js';
-var jsFolder = 'src/js/';
-var jsDist = './dist/js/';
-var jsWatch = 'src/js/**/*.js';
-var jsFiles = [jsSrc];
-var jsUrl = './dist/js/';
-var htmlWatch = '**/*.html';
+const browserSync = require( 'browser-sync' ).create();
+const reload = browserSync.reload;
 
 
-function triggerPlumber( src_file, dest_file ) {
-    return gulp.src( src_file )
-        .pipe(plumber() )
-        .pipe( gulp.dest( dest_file ) );
-};
+// Html
+const htmlSrc = './src/**/*.html';
+const htmlDist = './dist/';
+const htmlWatch = './src/**/*.html';
 
+// Style
+const styleSrc = '/.src/scss/style.scss';
+const styleDist = './dist/css/';
+const styleWatch = '/.src/scss/**/*.scss';
+
+// Javascript
+const jsSrc = 'script.js';
+const jsFolder = 'src/js/';
+const jsDist = './dist/js/';
+const jsWatch = 'src/js/**/*.js';
+const jsFiles = [jsSrc];
+const jsUrl = './dist/js/';
+
+// Images
+const imagesSrc = './src/images/**/*.*';
+const imagesDist = './dist/images/';
+const imagesWatch = './src/images/**/*.*';
+
+// Fonts
+const fontsSrc = './src/fonts/**/*.*';
+const fontsDist = './dist/fonts/';
+const fontsWatch = './src/fonts/**/*.*';
 
 //Browser-sync
-function browser_sync(done) {
+function browserSyncAction() {
     browserSync.init({
         server: {
             baseDir: './'
         }
     });
+};
+
+function reload(done) {
+    browserSync.reload();
 
     done();
 };
 
 // Task per-processor SCSS to CSS
 function style(done) {
-    gulp.src( styleSrc )
+    src( styleSrc )
         .pipe( sourcemaps.init({ loadMaps: true }) )
         .pipe( sass({ 
             outputStyle: 'compressed' }))
@@ -57,13 +75,13 @@ function style(done) {
         }) )
         .pipe( rename( { suffix: '.min' } ) )
         .pipe( sourcemaps.write( './' ) )
-        .pipe( gulp.dest( styleDist ) )
+        .pipe( dest( styleDist ) )
         .pipe( browserSync.stream() );
 
         done();
 };
 
-// Task js
+// Task javascript
 function javascript(done) {
     jsFiles.map(function( entry ){ 
         return browserify({
@@ -77,15 +95,25 @@ function javascript(done) {
         .pipe( sourcemaps.init({ loadMaps: true }))
         .pipe( uglify() )
         .pipe( sourcemaps.write( './' ))
-        .pipe( gulp.dest( jsDist ))
+        .pipe( dest( jsDist ))
         .pipe( browserSync.stream() );
     });
 
     done();
 };
 
+function triggerPlumber( src_file, dest_file ) {
+    return src( src_file )
+        .pipe(plumber() )
+        .pipe( dest( dest_file ) );
+};
+
+function html() {
+    return triggerPlumber( htmlSrc, htmlDist );
+};
+
 function images() {
-    return triggerPlumber( imagesSrc, imagesUrl );
+    return triggerPlumber( imagesSrc, imagesDist );
 };
 
 
@@ -93,29 +121,39 @@ function fonts() {
     return triggerPlumber( fontsSrc, fontsUrl );
 };
 
-function html() {
-    return triggerPlumber( htmlSrc, htmlUrl );
+// Clean build dist
+function cleanBuild() {
+    return task.src( './dist/**', { read: false } )
+        .pipe(clean());
 };
 
-
-function watch_file() {
-    gulp.watch(styleWatch, style);
-    gulp.watch(jsWatch, gulp.series(javascript, reload));
-
-    // gulp.src(jsUrl + 'main.min.js')
-    //     .pipe(notify({ message: 'Gulp is Watching, Happy Coding!' }));
+// Watch files
+function watchFile() {
+    watch(styleWatch, series(style, reload));
+    watch(jsWatch, series(javascript, reload));
+    watch(imagesWatch, series(images, reload));
+    watch(fontsWatch, series(fonts, reload));
+    watch(htmlWatch, series(html, reload));
 };
 
-gulp.task("style", style);
+// Gulp tasks
+task("style", style);
+// exports.style = style;
 
-gulp.task("javascript", javascript);
+task("javascript", javascript);
+// exports.javascript = javascript;
 
-gulp.task("images", images);
+task("images", images);
+// exports.images = images;
 
-gulp.task("fonts", fonts);
+task("fonts", fonts);
+// exports.fonts = fonts;
 
-gulp.task("html", html);
+task("html", html);
+// exports.html = html;
 
-gulp.task("default", gulp.parallel(style, javascript, images, fonts, html));
+task("build", parallel(cleanBuild, parallel(style, javascript, images, fonts, html)));
+// exports.build = parallel(style, javascript, images, fonts, html);
 
-gulp.task("watch", gulp.series(watch_file, browser_sync));
+task("watch", series(browserSyncAction, watchFile));
+// exports.watch = series(browserSyncAction, watchFile);
