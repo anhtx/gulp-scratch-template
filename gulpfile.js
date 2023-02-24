@@ -15,6 +15,7 @@ const source = require('vinyl-source-stream');
 const buffer = require('vinyl-buffer');
 const browserSync = require('browser-sync').create();
 const plumber = require('gulp-plumber');
+const pug = require('gulp-pug');
 
 // Style
 const styleSrc = './src/scss/style.scss';
@@ -43,6 +44,8 @@ const fontsWatch = './src/fonts/**/*.*';
 const htmlSrc = './src/**/*.html';
 const htmlDist = './dist/';
 const htmlWatch = './src/**/*.html';
+const pugSrc = './src/views/**/*.pug';
+const pugWatch = './src/views/**/*.pug';
 
 //Browser-sync
 function browserSyncAction() {
@@ -115,11 +118,12 @@ function html() {
     return triggerPlumber(htmlSrc, htmlDist);
 };
 
-// Clean build dist
-// Not yet used
-function cleanBuild() {
-    return task.src('./dist/**', { read: false })
-        .pipe(clean());
+function viewPug() {
+    return src(pugSrc)
+        .pipe(pug({
+            pretty: true
+        }))
+        .pipe(dest(htmlDist));
 };
 
 // Watch files
@@ -129,26 +133,22 @@ function watchFile() {
     watch(imagesWatch, series(images, reload));
     watch(fontsWatch, series(fonts, reload));
     watch(htmlWatch, series(html, reload));
+    watch(pugWatch, series(viewPug, reload));
 };
 
 // Gulp tasks
 task("style", style);
-// exports.style = style;
 
 task("javascript", javascript);
-// exports.javascript = javascript;
 
 task("images", images);
-// exports.images = images;
 
 task("fonts", fonts);
-// exports.fonts = fonts;
 
 task("html", html);
-// exports.html = html;
 
-task("build", parallel(style, javascript, images, fonts, html));
-// exports.build = parallel(style, javascript, images, fonts, html);
+task("viewPug", viewPug);
+
+task("build", parallel(style, javascript, images, fonts, html, viewPug));
 
 task("watch", parallel(browserSyncAction, watchFile));
-// exports.watch = series(browserSyncAction, watchFile);
