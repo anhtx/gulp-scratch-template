@@ -19,4 +19,4 @@ npm install -g gulp-cli
 npm start
 
 # Build project
-npm build
+npm run build

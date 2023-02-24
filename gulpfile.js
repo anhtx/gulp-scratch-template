@@ -1,33 +1,25 @@
 // Let gulp of course
-// var gulp = require( 'gulp' );
 const { src, dest, task, series, parallel, watch } = require('gulp');
 
 // CSS
-const sass = require( 'gulp-sass' )(require( 'sass' ));
-const autoprefixer = require( 'gulp-autoprefixer' );
+const sass = require('gulp-sass')(require('sass'));
+const autoprefixer = require('gulp-autoprefixer' );
 
 // Plugins
-const rename = require( 'gulp-rename' );
-const uglify = require( 'gulp-uglify' );
-const sourcemaps = require( 'gulp-sourcemaps' );
-const browserify = require( 'browserify' );
-const babelify = require( 'babelify' );
-const source = require( 'vinyl-source-stream' );
-const buffer = require( 'vinyl-buffer' );
-const { notify } = require('browser-sync');
-const browserSync = require( 'browser-sync' ).create();
-const reload = browserSync.reload;
-
-
-// Html
-const htmlSrc = './src/**/*.html';
-const htmlDist = './dist/';
-const htmlWatch = './src/**/*.html';
+const rename = require('gulp-rename');
+const uglify = require('gulp-uglify');
+const sourcemaps = require('gulp-sourcemaps');
+const browserify = require('browserify');
+const babelify = require('babelify');
+const source = require('vinyl-source-stream');
+const buffer = require('vinyl-buffer');
+const browserSync = require('browser-sync').create();
+const plumber = require('gulp-plumber');
 
 // Style
-const styleSrc = '/.src/scss/style.scss';
+const styleSrc = './src/scss/style.scss';
 const styleDist = './dist/css/';
-const styleWatch = '/.src/scss/**/*.scss';
+const styleWatch = './src/scss/**/*.scss';
 
 // Javascript
 const jsSrc = 'script.js';
@@ -35,7 +27,6 @@ const jsFolder = 'src/js/';
 const jsDist = './dist/js/';
 const jsWatch = 'src/js/**/*.js';
 const jsFiles = [jsSrc];
-const jsUrl = './dist/js/';
 
 // Images
 const imagesSrc = './src/images/**/*.*';
@@ -47,83 +38,87 @@ const fontsSrc = './src/fonts/**/*.*';
 const fontsDist = './dist/fonts/';
 const fontsWatch = './src/fonts/**/*.*';
 
+
+// Html
+const htmlSrc = './src/**/*.html';
+const htmlDist = './dist/';
+const htmlWatch = './src/**/*.html';
+
 //Browser-sync
 function browserSyncAction() {
     browserSync.init({
         server: {
-            baseDir: './'
+            baseDir: './dist/'
         }
     });
 };
 
 function reload(done) {
     browserSync.reload();
-
     done();
 };
 
 // Task per-processor SCSS to CSS
 function style(done) {
-    src( styleSrc )
-        .pipe( sourcemaps.init({ loadMaps: true }) )
-        .pipe( sass({ 
-            outputStyle: 'compressed' }))
-        .on('error', sass.logError)
-        .pipe( autoprefixer({
+    src(styleSrc)
+        .pipe(sourcemaps.init({ loadMaps: true }) )
+        .pipe(sass({ outputStyle: 'compressed' }).on('error', sass.logError))
+        .pipe(autoprefixer({
             overrideBrowserslist: ['last 2 versions'], 
             cascade: false
-        }) )
-        .pipe( rename( { suffix: '.min' } ) )
-        .pipe( sourcemaps.write( './' ) )
-        .pipe( dest( styleDist ) )
-        .pipe( browserSync.stream() );
+        }))
+        .pipe(rename({ suffix: '.min' }))
+        .pipe(sourcemaps.write('./'))
+        .pipe(dest(styleDist))
+        .pipe(browserSync.stream());
 
         done();
 };
 
 // Task javascript
 function javascript(done) {
-    jsFiles.map(function( entry ){ 
+    jsFiles.map(function(entry) { 
         return browserify({
             entries: [jsFolder + entry]
         })
-        .transform( babelify, { presets: ['@babel/preset-env'] } )
+        .transform(babelify, { presets: ['@babel/preset-env'] })
         .bundle()
-        .pipe( source( entry ) )
-        .pipe( rename({ extname: '.min.js' }))
-        .pipe( buffer() )
-        .pipe( sourcemaps.init({ loadMaps: true }))
-        .pipe( uglify() )
-        .pipe( sourcemaps.write( './' ))
-        .pipe( dest( jsDist ))
-        .pipe( browserSync.stream() );
+        .pipe(source(entry))
+        .pipe(rename({ extname: '.min.js' }))
+        .pipe(buffer())
+        .pipe(sourcemaps.init({ loadMaps: true }))
+        .pipe(uglify())
+        .pipe(sourcemaps.write('./'))
+        .pipe(dest(jsDist))
+        .pipe(browserSync.stream());
     });
 
     done();
 };
 
-function triggerPlumber( src_file, dest_file ) {
-    return src( src_file )
-        .pipe(plumber() )
-        .pipe( dest( dest_file ) );
-};
-
-function html() {
-    return triggerPlumber( htmlSrc, htmlDist );
+function triggerPlumber(src_file, dest_file) {
+    return src(src_file)
+        .pipe(plumber())
+        .pipe(dest(dest_file));
 };
 
 function images() {
-    return triggerPlumber( imagesSrc, imagesDist );
+    return triggerPlumber(imagesSrc, imagesDist);
 };
 
 
 function fonts() {
-    return triggerPlumber( fontsSrc, fontsUrl );
+    return triggerPlumber(fontsSrc, fontsDist);
+};
+
+function html() {
+    return triggerPlumber(htmlSrc, htmlDist);
 };
 
 // Clean build dist
+// Not yet used
 function cleanBuild() {
-    return task.src( './dist/**', { read: false } )
+    return task.src('./dist/**', { read: false })
         .pipe(clean());
 };
 
@@ -152,8 +147,8 @@ task("fonts", fonts);
 task("html", html);
 // exports.html = html;
 
-task("build", parallel(cleanBuild, parallel(style, javascript, images, fonts, html)));
+task("build", parallel(style, javascript, images, fonts, html));
 // exports.build = parallel(style, javascript, images, fonts, html);
 
-task("watch", series(browserSyncAction, watchFile));
+task("watch", parallel(browserSyncAction, watchFile));
 // exports.watch = series(browserSyncAction, watchFile);
