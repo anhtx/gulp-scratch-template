@@ -1,6 +1,6 @@
 // Let gulp of course
 const { src, dest, task, series, parallel, watch } = require('gulp');
-
+const process = require('node:process');
 // CSS
 const sass = require('gulp-sass')(require('sass'));
 const autoprefixer = require('gulp-autoprefixer' );
@@ -48,11 +48,14 @@ const pugSrc = './src/views/**/*.pug';
 const pugWatch = './src/views/**/*.pug';
 
 //Browser-sync
+process.env.PORT = 8000;
+
 function browserSyncAction() {
     browserSync.init({
         server: {
             baseDir: './dist/'
-        }
+        },
+        port: process.env.PORT | 3000
     });
 };
 
