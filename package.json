@@ -1,0 +1,45 @@
+{
+  "name": "gulp-scratch-template",
+  "version": "1.0.0",
+  "description": "Gulp from scratch",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "gulp watch",
+    "build": "gulp build"
+  },
+  "keywords": [
+    "gulpfile",
+    "js",
+    "scss",
+    "html",
+    "bootstrap"
+  ],
+  "author": "anhtx ",
+  "license": "ISC",
+  "dependencies": {
+    "gulp": "^4.0.2",
+    "sass": "^1.58.3"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.21.0",
+    "@babel/preset-env": "^7.20.2",
+    "babelify": "^10.0.0",
+    "bootstrap": "^5.2.3",
+    "browser-sync": "^2.27.11",
+    "browserify": "^17.0.0",
+    "gulp-autoprefixer": "^8.0.0",
+    "gulp-plumber": "^1.2.1",
+    "gulp-rename": "^2.0.0",
+    "gulp-sass": "^5.1.0",
+    "gulp-sourcemaps": "^2.6.5",
+    "gulp-uglify": "^3.0.2",
+    "vinyl-buffer": "^1.0.1",
+    "vinyl-source-stream": "^2.0.0"
+  },
+  "babel": {
+    "presets": [
+      "@babel/preset-env"
+    ]
+  }
+}

@@ -1,0 +1,23 @@
+@import 'base/variable';
+@import 'base/grid';
+@import 'base/button';
+@import '../../node_modules/bootstrap/scss/bootstrap.scss';
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background-color: $bg-color;
+    color: $blue;
+}
+
+a {
+    transition: all 0.3 ease;
+    text-decoration: none;
+}
+
+ul {
+    margin: 0;
+    padding: 0;
+}
