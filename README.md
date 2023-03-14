@@ -17,7 +17,7 @@ npm start
 npm run build
 
 ## Should to do continue:
-[] Add lint
-[] Add prettier
-[] Add lint-staged
-[] Add husky
+* [ ] Add lint
+* [ ] Add prettier
+* [ ] Add lint-staged
+* [ ] Add husky
